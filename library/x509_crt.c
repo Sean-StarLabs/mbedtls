@@ -270,6 +270,7 @@ static int x509_memcasecmp(const void *s1, const void *s2, size_t len)
     return 0;
 }
 
+#if !defined(MBEDTLS_X509_CRT_NO_HOSTNAME)
 /*
  * Return 0 if name matches wildcard, -1 otherwise
  */
@@ -301,6 +302,7 @@ static int x509_check_wildcard(const char *cn, const mbedtls_x509_buf *name)
 
     return -1;
 }
+#endif /* !MBEDTLS_X509_CRT_NO_HOSTNAME */
 
 /*
  * Compare two X.509 strings, case-insensitive, and allowing for some encoding
@@ -2685,6 +2687,7 @@ find_parent:
     }
 }
 
+#if !defined(MBEDTLS_X509_CRT_NO_HOSTNAME)
 #ifdef _WIN32
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")
@@ -3007,6 +3010,7 @@ static void x509_crt_verify_name(const mbedtls_x509_crt *crt,
 
     *flags |= MBEDTLS_X509_BADCERT_CN_MISMATCH;
 }
+#endif /* !MBEDTLS_X509_CRT_NO_HOSTNAME */
 
 /*
  * Merge the flags for all certs in the chain, after calling callback
@@ -3083,10 +3087,17 @@ static int x509_crt_verify_restartable_ca_cb(mbedtls_x509_crt *crt,
         goto exit;
     }
 
+#if defined(MBEDTLS_X509_CRT_NO_HOSTNAME)
+    if (cn != NULL) {
+        ret = MBEDTLS_ERR_X509_FEATURE_UNAVAILABLE;
+        goto exit;
+    }
+#else
     /* check name if requested */
     if (cn != NULL) {
         x509_crt_verify_name(crt, cn, &ee_flags);
     }
+#endif
 
     /* Check the type and size of the key */
     pk_type = mbedtls_pk_get_type(&crt->pk);

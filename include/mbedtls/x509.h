@@ -482,7 +482,9 @@ void mbedtls_x509_free_subject_alt_name(mbedtls_x509_subject_alternative_name *s
  * \return         Length of binary IP address; num bytes written to target.
  * \return         \c 0 on failure to parse CN string as an IP address.
  */
+#if !defined(MBEDTLS_X509_CRT_NO_HOSTNAME)
 size_t mbedtls_x509_crt_parse_cn_inet_pton(const char *cn, void *dst);
+#endif
 
 #define MBEDTLS_X509_SAFE_SNPRINTF                          \
     do {                                                    \
